@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Fretboard & Scale Finder</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --text-color: #e0e0e0;
+            --sub-text: #a0a0a0;
+            --root-note-bg: #ff5252;
+            --scale-note-bg: #3700b3;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+        }
+        h1 { font-size: 1.2rem; text-align: center; color: var(--accent-color); margin-bottom: 16px; }
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .select-group {
+            display: flex;
+            gap: 10px;
+        }
+        select {
+            flex: 1;
+            padding: 12px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .section-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 16px 0 8px 0;
+            color: var(--secondary-color);
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .scale-info {
+            font-size: 0.75rem;
+            color: var(--sub-text);
+            font-weight: normal;
+        }
+        
+        /* 기타 지판 스타일 */
+        .fretboard-container {
+            width: 100%;
+            overflow-x: auto;
+            background: #251e18;
+            border-radius: 8px;
+            padding: 10px 0;
+            box-shadow: inset 0 0 10px #000;
+        }
+        .fretboard {
+            display: flex;
+            flex-direction: column;
+            min-width: 650px;
+            position: relative;
+            padding: 0 10px;
+        }
+        .string {
+            display: flex;
+            height: 28px;
+            align-items: center;
+            position: relative;
+        }
+        /* 줄 두께 표현 */
+        .string::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            background: #888;
+            z-index: 1;
+        }
+        .string:nth-child(1)::before { height: 1px; }
+        .string:nth-child(2)::before { height: 1.5px; }
+        .string:nth-child(3)::before { height: 2px; }
+        .string:nth-child(4)::before { height: 2.5px; }
+        .string:nth-child(5)::before { height: 3px; }
+        .string:nth-child(6)::before { height: 3.5px; }
+
+        .fret {
+            flex: 1;
+            height: 100%;
+            border-right: 2px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+        .fret.open-fret {
+            border-right: 4px solid #aaa;
+            flex: 0.6;
+            background: rgba(255,255,255,0.03);
+        }
+        .note-marker {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 3;
+        }
+        .note-marker.root {
+            background-color: var(--root-note-bg);
+            border: 2px solid #fff;
+        }
+        .note-marker.scale {
+            background-color: var(--scale-note-bg);
+            border: 1px solid #7c4dff;
+        }
+        .fret-numbers {
+            display: flex;
+            min-width: 650px;
+            padding: 4px 10px 0 10px;
+            color: var(--sub-text);
+            font-size: 0.7rem;
+        }
+        .fret-num {
+            flex: 1;
+            text-align: center;
+        }
+        .fret-num.open { flex: 0.6; }
+
+        /* 코드 그리드 스타일 */
+        .chord-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 8px;
+        }
+        .chord-card {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+        .degree { font-size: 0.7rem; color: var(--sub-text); margin-bottom: 2px; }
+        .chord-name { font-size: 1rem; font-weight: bold; color: #fff; }
+        .desc { font-size: 0.65rem; color: var(--accent-color); margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+    <h1>Advanced Fretboard & Scale Finder</h1>
+
+    <div class="control-panel">
+        <div class="select-group">
+            <select id="rootSelect" onchange="updateAll()">
+                <option value="0">C</option>
+                <option value="1">C# / Db</option>
+                <option value="2">D</option>
+                <option value="3">D# / Eb</option>
+                <option value="4">E</option>
+                <option value="5">F</option>
+                <option value="6">F# / Gb</option>
+                <option value="7">G</option>
+                <option value="8">G# / Ab</option>
+                <option value="9">A</option>
+                <option value="10">A# / Bb</option>
+                <option value="11">B</option>
+            </select>
+            <select id="scaleCategory" onchange="populateScales()">
+                <option value="basic">기본 스케일 (Basic)</option>
+                <option value="modes">모드 스케일 (Church Modes)</option>
+                <option value="altered">도미넌트 & 특수 (Altered / Special)</option>
+                <option value="symmetrical">대칭 & 펜타토닉 (Symmetrical / Penta)</option>
+            </select>
+        </div>
+        <select id="scaleSelect" onchange="updateAll()"></select>
+    </div>
+
+    <!-- 기타 지판 스케일 뷰어 -->
+    <div class="section-title">
+        <span>Guitar Fretboard Scale Map</span>
+        <span id="scaleFormula" class="scale-info"></span>
+    </div>
+    <div class="fretboard-container">
+        <div id="fretboard" class="fretboard"></div>
+        <div id="fretNumbers" class="fret-numbers"></div>
+    </div>
+
+    <!-- 코드 분석 출력 -->
+    <div class="section-title">1. Diatonic / Target Chords</div>
+    <div id="diatonicGrid" class="chord-grid"></div>
+
+    <div class="section-title">2. Modal Interchange / Characteristic Chords</div>
+    <div id="modalGrid" class="chord-grid"></div>
+
+    <div class="section-title">3. Secondary Dominants & Substitutes</div>
+    <div id="subGrid" class="chord-grid"></div>
+
+    <script>
+        const notes = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+        
+        // 카테고리별 확장 스케일 데이터 정의
+        const scalesData = {
+            basic: {
+                major: { name: "Ionian / Major Scale", intervals: [0, 2, 4, 5, 7, 9, 11], formula: "1 2 3 4 5 6 7" },
+                minor: { name: "Aeolian / Natural Minor", intervals: [0, 2, 3, 5, 7, 8, 10], formula: "1 2 b3 4 5 b6 b7" },
+                harmonic_minor: { name: "Harmonic Minor", intervals: [0, 2, 3, 5, 7, 8, 11], formula: "1 2 b3 4 5 b6 7" },
+                melodic_minor: { name: "Melodic Minor (Jazz)", intervals: [0, 2, 3, 5, 7, 9, 11], formula: "1 2 b3 4 5 6 7" }
+            },
+            modes: {
+                dorian: { name: "Dorian Mode", intervals: [0, 2, 3, 5, 7, 9, 10], formula: "1 2 b3 4 5 6 b7" },
+                phrygian: { name: "Phrygian Mode", intervals: [0, 1, 3, 5, 7, 8, 10], formula: "1 b2 b3 4 5 b6 b7" },
+                lydian: { name: "Lydian Mode", intervals: [0, 2, 4, 6, 7, 9, 11], formula: "1 2 3 #4 5 6 7" },
+                mixolydian: { name: "Mixolydian Mode", intervals: [0, 2, 4, 5, 7, 9, 10], formula: "1 2 3 4 5 6 b7" },
+                locrian: { name: "Locrian Mode", intervals: [0, 1, 3, 5, 6, 8, 10], formula: "1 b2 b3 4 b5 b6 b7" }
+            },
+            altered: {
+                phrygian_dominant: { name: "Phrygian Dominant (H.M 5th)", intervals: [0, 1, 4, 5, 7, 8, 10], formula: "1 b2 3 4 5 b6 b7" },
+                altered: { name: "Altered Scale (Super Locrian)", intervals: [0, 1, 3, 4, 6, 8, 10], formula: "1 b2 b3 b4 b5 b6 b7 (#9,#11,b13)" },
+                lydian_dominant: { name: "Lydian Dominant (Lydian b7)", intervals: [0, 2, 4, 6, 7, 9, 10], formula: "1 2 3 #4 5 6 b7" },
+                whole_tone: { name: "Whole Tone Scale (훌톤)", intervals: [0, 2, 4, 6, 8, 10], formula: "1 2 3 #4 #5 b7" },
+                mixolydian_b6: { name: "Mixolydian b6 (M.M 5th)", intervals: [0, 2, 4, 5, 7, 8, 10], formula: "1 2 3 4 5 b6 b7" }
+            },
+            symmetrical: {
+                diminished_hw: { name: "HW Diminished (Half-Whole)", intervals: [0, 1, 3, 4, 6, 7, 9, 10], formula: "1 b2 b3 3 #4 5 6 b7" },
+                diminished_wh: { name: "WH Diminished (Whole-Half)", intervals: [0, 2, 3, 5, 6, 8, 9, 11], formula: "1 2 b3 4 b5 b6 bb7 7" },
+                major_pentatonic: { name: "Major Pentatonic", intervals: [0, 2, 4, 7, 9], formula: "1 2 3 5 6" },
+                minor_pentatonic: { name: "Minor Pentatonic", intervals: [0, 3, 5, 7, 10], formula: "1 b3 4 5 b7" },
+                minor_blues: { name: "Minor Blues Scale", intervals: [0, 3, 5, 6, 7, 10], formula: "1 b3 4 b5 5 b7" }
+            }
+        };
+
+        const tuningOffsets = [4, 11, 7, 2, 9, 4]; // E A D G B E
+        const totalFrets = 12;
+
+        const chordTemplates = {
+            major: {
+                diatonic: [{ deg: "Imaj7", offset: 0, type: "maj7" }, { deg: "iim7", offset: 2, type: "m7" }, { deg: "iiim7", offset: 4, type: "m7" }, { deg: "IVmaj7", offset: 5, type: "maj7" }, { deg: "V7", offset: 7, type: "7" }, { deg: "vim7", offset: 9, type: "m7" }, { deg: "viim7b5", offset: 11, type: "m7b5" }],
+                modal: [{ deg: "bIIImaj7", offset: 3, type: "maj7", desc: "Parallel Minor" }, { deg: "ivm7", offset: 5, type: "m7", desc: "Subdom Minor" }, { deg: "bVImaj7", offset: 8, type: "maj7", desc: "Parallel Minor" }, { deg: "bVII7", offset: 10, type: "7", desc: "SubTonal" }],
+                subs: [{ deg: "V7/ii", offset: 9, type: "7", desc: "Sec Dom" }, { deg: "V7/IV", offset: 0, type: "7", desc: "Sec Dom" }, { deg: "V7/V", offset: 2, type: "7", desc: "Sec Dom" }, { deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
+            },
+            minor: {
+                diatonic: [{ deg: "im7", offset: 0, type: "m7" }, { deg: "iim7b5", offset: 2, type: "m7b5" }, { deg: "bIIImaj7", offset: 3, type: "maj7" }, { deg: "ivm7", offset: 5, type: "m7" }, { deg: "vm7", offset: 7, type: "m7" }, { deg: "bVImaj7", offset: 8, type: "maj7" }, { deg: "bVII7", offset: 10, type: "7" }],
+                modal: [{ deg: "Imaj7", offset: 0, type: "maj7", desc: "Parallel Major" }, { deg: "IV7", offset: 5, type: "7", desc: "Dorian Mode" }, { deg: "V7", offset: 7, type: "7", desc: "Harmonic Minor" }, { deg: "viim7b5", offset: 11, type: "m7b5", desc: "Harmonic Minor" }],
+                subs: [{ deg: "V7/iv", offset: 0, type: "7", desc: "Sec Dom" }, { deg: "V7/bVI", offset: 3, type: "7", desc: "Sec Dom" }, { deg: "V7/bVII", offset: 5, type: "7", desc: "Sec Dom" }, { deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
+            },
+            dominant: {
+                diatonic: [{ deg: "Root Dom7", offset: 0, type: "7" }, { deg: "7alt", offset: 0, type: "7alt" }, { deg: "7(#11)", offset: 0, type: "7(#11)" }, { deg: "7(b9,b13)", offset: 0, type: "7(b9,b13)" }],
+                modal: [{ deg: "Target (I)", offset: 5, type: "maj7", desc: "Resolution" }, { deg: "Target (im)", offset: 5, type: "m7", desc: "Minor Resolution" }],
+                subs: [{ deg: "SubV7", offset: 6, type: "7", desc: "Tritone Sub" }, { deg: "Related iim7", offset: 7, type: "m7", desc: "ii-V Rel" }]
+            },
+            generic: {
+                diatonic: [{ deg: "Root Chord", offset: 0, type: "7" }, { deg: "3rd", offset: 4, type: "m7b5" }, { deg: "5th", offset: 7, type: "7" }],
+                modal: [{ deg: "SubV", offset: 1, type: "7", desc: "Tritone" }],
+                subs: [{ deg: "Sec Dom", offset: 7, type: "7" }]
+            }
+        };
+
+        function populateScales() {
+            const cat = document.getElementById("scaleCategory").value;
+            const scaleSelect = document.getElementById("scaleSelect");
+            scaleSelect.innerHTML = "";
+            
+            const group = scalesData[cat];
+            for (let key in group) {
+                const opt = document.createElement("option");
+                opt.value = `${cat}.${key}`;
+                opt.textContent = group[key].name;
+                scaleSelect.appendChild(opt);
+            }
+            updateAll();
+        }
+
+        function getSelectedScaleObj() {
+            const val = document.getElementById("scaleSelect").value;
+            if (!val) return scalesData.basic.major;
+            const parts = val.split(".");
+            return scalesData[parts[0]][parts[1]];
+        }
+
+        function renderFretboard(rootIndex, intervals) {
+            const fretboard = document.getElementById("fretboard");
+            const fretNumbers = document.getElementById("fretNumbers");
+            fretboard.innerHTML = "";
+            fretNumbers.innerHTML = "";
+
+            const scaleNotes = intervals.map(i => (rootIndex + i) % 12);
+
+            for (let f = 0; f <= totalFrets; f++) {
+                const numDiv = document.createElement("div");
+                numDiv.className = `fret-num ${f === 0 ? 'open' : ''}`;
+                numDiv.textContent = f === 0 ? "Open" : f;
+                fretNumbers.appendChild(numDiv);
+            }
+
+            tuningOffsets.forEach((stringOffset) => {
+                const stringDiv = document.createElement("div");
+                stringDiv.className = "string";
+
+                for (let fret = 0; fret <= totalFrets; fret++) {
+                    const fretDiv = document.createElement("div");
+                    fretDiv.className = `fret ${fret === 0 ? 'open-fret' : ''}`;
+
+                    const noteIndex = (stringOffset + fret) % 12;
+
+                    if (scaleNotes.includes(noteIndex)) {
+                        const marker = document.createElement("div");
+                        const isRoot = (noteIndex === rootIndex);
+                        marker.className = `note-marker ${isRoot ? 'root' : 'scale'}`;
+                        marker.textContent = notes[noteIndex];
+                        fretDiv.appendChild(marker);
+                    }
+                    stringDiv.appendChild(fretDiv);
+                }
+                fretboard.appendChild(stringDiv);
+            });
+        }
+
+        function renderChordGrid(elementId, items, rootIndex) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = "";
+            items.forEach(item => {
+                const noteIndex = (rootIndex + item.offset) % 12;
+                const chordName = notes[noteIndex] + item.type;
+                const card = document.createElement("div");
+                card.className = "chord-card";
+                card.innerHTML = `
+                    <div class="degree">${item.deg}</div>
+                    <div class="chord-name">${chordName}</div>
+                    ${item.desc ? `<div class="desc">${item.desc}</div>` : ''}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateAll() {
+            const rootIndex = parseInt(document.getElementById("rootSelect").value);
+            const scaleObj = getSelectedScaleObj();
+
+            // 음정 도표(Formula) 표시
+            document.getElementById("scaleFormula").textContent = `[ ${scaleObj.formula} ]`;
+
+            // 지판 렌더링
+            renderFretboard(rootIndex, scaleObj.intervals);
+
+            // 스케일 성격에 맞는 코드 카드 세트 선택
+            let tmpl = chordTemplates.generic;
+            const val = document.getElementById("scaleSelect").value;
+            if (val.includes("major") || val.includes("ionian") || val.includes("lydian")) tmpl = chordTemplates.major;
+            else if (val.includes("minor") || val.includes("dorian") || val.includes("aeolian")) tmpl = chordTemplates.minor;
+            else if (val.includes("altered") || val.includes("phrygian_dominant") || val.includes("whole_tone") || val.includes("mixolydian") || val.includes("diminished")) tmpl = chordTemplates.dominant;
+
+            renderChordGrid("diatonicGrid", tmpl.diatonic, rootIndex);
+            renderChordGrid("modalGrid", tmpl.modal, rootIndex);
+            renderChordGrid("subGrid", tmpl.subs, rootIndex);
+        }
+
+        populateScales();
+    </script>
+</body>
+</html>
