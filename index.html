@@ -59,26 +59,26 @@
             font-weight: normal;
         }
         
-        /* 기타 지판 스타일 */
+        /* 1~12프렛 한눈에 보기 최적화 지판 스타일 */
         .fretboard-container {
             width: 100%;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             background: #251e18;
             border-radius: 8px;
-            padding: 10px 0;
+            padding: 12px 0 20px 0;
             box-shadow: inset 0 0 10px #000;
         }
         .fretboard {
             display: flex;
             flex-direction: column;
-            min-width: 1100px;
+            min-width: 1100px; /* 12프렛까지 한 화면에 확보되도록 비율 최적화 */
             position: relative;
-            padding: 0 10px;
+            padding: 0 8px;
         }
         .string {
             display: flex;
-            height: 28px;
+            height: 34px; /* 줄 간격 높이 유지 */
             align-items: center;
             position: relative;
         }
@@ -109,10 +109,32 @@
             z-index: 2;
         }
         .fret.open-fret {
-            border-right: 4px solid #aaa;
-            flex: 0.6;
+            border-right: 4px solid #ddd;
+            flex: 0.5; /* 개방현 너비 조절 */
             background: rgba(255,255,255,0.03);
         }
+
+        /* 프렛 포지션 닷 마커 */
+        .fret.has-dot::after {
+            content: '';
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            bottom: -16px;
+            z-index: 1;
+        }
+        .fret.has-double-dot::after {
+            content: '••';
+            position: absolute;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 11px;
+            letter-spacing: -1px;
+            bottom: -19px;
+            z-index: 1;
+        }
+
         .note-marker {
             width: 22px;
             height: 22px;
@@ -137,15 +159,16 @@
         .fret-numbers {
             display: flex;
             min-width: 1100px;
-            padding: 4px 10px 0 10px;
+            padding: 6px 8px 0 8px;
             color: var(--sub-text);
-            font-size: 0.7rem;
+            font-size: 0.75rem;
+            font-weight: bold;
         }
         .fret-num {
             flex: 1;
             text-align: center;
         }
-        .fret-num.open { flex: 0.6; }
+        .fret-num.open { flex: 0.5; }
 
         /* 코드 그리드 스타일 */
         .chord-grid {
@@ -218,7 +241,6 @@
     <script>
         const notes = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
         
-        // 카테고리별 확장 스케일 데이터 정의
         const scalesData = {
             basic: {
                 major: { name: "Ionian / Major Scale", intervals: [0, 2, 4, 5, 7, 9, 11], formula: "1 2 3 4 5 6 7" },
@@ -252,7 +274,6 @@
         const tuningOffsets = [4, 11, 7, 2, 9, 4]; // E A D G B E
         const totalFrets = 24;
 
-        // 개별 스케일 키값에 1:1 대응하도록 정밀 수정된 chordTemplates 데이터
         const chordTemplates = {
             major: {
                 diatonic: [{ deg: "Imaj7", offset: 0, type: "maj7" }, { deg: "iim7", offset: 2, type: "m7" }, { deg: "iiim7", offset: 4, type: "m7" }, { deg: "IVmaj7", offset: 5, type: "maj7" }, { deg: "V7", offset: 7, type: "7" }, { deg: "vim7", offset: 9, type: "m7" }, { deg: "viim7b5", offset: 11, type: "m7b5" }],
@@ -302,7 +323,7 @@
             dominant: {
                 diatonic: [{ deg: "Root Dom7", offset: 0, type: "7" }, { deg: "7alt", offset: 0, type: "7alt" }, { deg: "7(#11)", offset: 0, type: "7(#11)" }, { deg: "7(b9,b13)", offset: 0, type: "7(b9,b13)" }],
                 modal: [{ deg: "Target (I)", offset: 5, type: "maj7", desc: "Resolution" }, { deg: "Target (im)", offset: 5, type: "m7", desc: "Minor Resolution" }],
-                subs: [{ deg: "SubV7", offset: 6, type: "7", desc: "Tritone Sub" }, { deg: "Related iim7", offset: 7, type: "m7", desc: "ii-V Rel" }]
+                subs: [{ deg: "SubV7", offset: 6, type: "7", desc: "Tritone Sub" }, { deg: "Related iim7", offset: 7, type: "m7" }, { deg: "ii-V Rel" }]
             },
             generic: {
                 diatonic: [{ deg: "Root Chord", offset: 0, type: "7" }, { deg: "3rd", offset: 4, type: "m7b5" }, { deg: "5th", offset: 7, type: "7" }],
@@ -340,6 +361,8 @@
             fretNumbers.innerHTML = "";
 
             const scaleNotes = intervals.map(i => (rootIndex + i) % 12);
+            const singleDots = [3, 5, 7, 9, 15, 17, 19, 21];
+            const doubleDots = [12, 24];
 
             for (let f = 0; f <= totalFrets; f++) {
                 const numDiv = document.createElement("div");
@@ -348,13 +371,20 @@
                 fretNumbers.appendChild(numDiv);
             }
 
-            tuningOffsets.forEach((stringOffset) => {
+            tuningOffsets.forEach((stringOffset, stringIndex) => {
                 const stringDiv = document.createElement("div");
                 stringDiv.className = "string";
 
                 for (let fret = 0; fret <= totalFrets; fret++) {
                     const fretDiv = document.createElement("div");
-                    fretDiv.className = `fret ${fret === 0 ? 'open-fret' : ''}`;
+                    let fretClasses = `fret ${fret === 0 ? 'open-fret' : ''}`;
+                    
+                    if (stringIndex === 5) {
+                        if (singleDots.includes(fret)) fretClasses += ' has-dot';
+                        if (doubleDots.includes(fret)) fretClasses += ' has-double-dot';
+                    }
+
+                    fretDiv.className = fretClasses;
 
                     const noteIndex = (stringOffset + fret) % 12;
 
@@ -392,17 +422,13 @@
             const rootIndex = parseInt(document.getElementById("rootSelect").value);
             const scaleObj = getSelectedScaleObj();
 
-            // 음정 도표(Formula) 표시
             document.getElementById("scaleFormula").textContent = `[ ${scaleObj.formula} ]`;
 
-            // 지판 렌더링
             renderFretboard(rootIndex, scaleObj.intervals);
 
-            // 선택된 스케일 키값 추출 (예: 'basic.harmonic_minor' -> 'harmonic_minor')
             const val = document.getElementById("scaleSelect").value || "";
             const scaleKey = val.split(".")[1] || "";
 
-            // 스케일 성격에 맞는 정밀 코드 카드 세트 선택
             let tmpl = chordTemplates.generic;
             if (chordTemplates[scaleKey]) {
                 tmpl = chordTemplates[scaleKey];
