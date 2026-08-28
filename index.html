@@ -383,6 +383,13 @@
                         }
                         
                         fretDiv.appendChild(marker);
+                    } else if (fret === 0) {
+                        // 0번 프렛(개방현)에 음이 없을 때 틀어짐을 방지하기 위한 투명 공백 마커 추가
+                        const emptyMarker = document.createElement("div");
+                        emptyMarker.className = "note-marker";
+                        emptyMarker.style.opacity = "0";
+                        emptyMarker.style.pointerEvents = "none";
+                        fretDiv.appendChild(emptyMarker);
                     }
                     stringDiv.appendChild(fretDiv);
                 }
