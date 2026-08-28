@@ -134,6 +134,7 @@
             z-index: 1;
         }
 
+        /* 단일 텍스트 최적화 마커 스타일 */
         .note-marker {
             width: 26px;
             height: 26px;
@@ -320,6 +321,7 @@
             return scalesData[parts[0]][parts[1]];
         }
 
+        // 지판 렌더링 범용 함수 (type: 'notes' | 'degrees')
         function renderSingleFretboard(boardId, numbersId, rootIndex, scaleObj, displayType) {
             const fretboard = document.getElementById(boardId);
             const fretNumbers = document.getElementById(numbersId);
@@ -364,8 +366,7 @@
 
                     const noteIndex = (stringOffset + fret) % 12;
 
-                    // 0번 프렛(개방현)에는 마커를 생성하지 않고 완전히 비워둡니다.
-                    if (fret !== 0 && scaleNotes.includes(noteIndex)) {
+                    if (scaleNotes.includes(noteIndex)) {
                         const marker = document.createElement("div");
                         const isRoot = (noteIndex === rootIndex);
                         
@@ -374,6 +375,7 @@
 
                         marker.className = `note-marker ${isRoot ? 'root' : 'scale'}`;
                         
+                        // 표시 모드에 따라 텍스트 분기
                         if (displayType === 'notes') {
                             marker.textContent = notes[noteIndex];
                         } else {
@@ -381,6 +383,13 @@
                         }
                         
                         fretDiv.appendChild(marker);
+                    } else if (fret === 0) {
+                        // 0번 프렛(개방현)에 음이 없을 때 틀어짐을 방지하기 위한 투명 공백 마커 추가
+                        const emptyMarker = document.createElement("div");
+                        emptyMarker.className = "note-marker";
+                        emptyMarker.style.opacity = "0";
+                        emptyMarker.style.pointerEvents = "none";
+                        fretDiv.appendChild(emptyMarker);
                     }
                     stringDiv.appendChild(fretDiv);
                 }
@@ -411,6 +420,7 @@
 
             document.getElementById("scaleFormula").textContent = `[ Formula: ${scaleObj.formula} ]`;
 
+            // 음이름 지판 & 도수 지판 동시 렌더링
             renderSingleFretboard("fretboardNotes", "fretNumbersNotes", rootIndex, scaleObj, 'notes');
             renderSingleFretboard("fretboardDegrees", "fretNumbersDegrees", rootIndex, scaleObj, 'degrees');
 
