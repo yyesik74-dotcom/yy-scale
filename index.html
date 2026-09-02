@@ -59,7 +59,6 @@
             font-weight: normal;
         }
         
-        /* 지판 레이아웃 공통 스타일 */
         .fretboard-container {
             width: 100%;
             overflow-x: auto;
@@ -167,21 +166,20 @@
         .fret-num { flex: 1; text-align: center; }
         .fret-num.open { flex: 0.5; }
 
-        /* 코드 그리드 */
         .chord-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
             gap: 8px;
         }
         .chord-card {
             background: var(--card-bg);
-            padding: 10px;
+            padding: 10px 6px;
             border-radius: 8px;
             text-align: center;
             border: 1px solid #2a2a2a;
         }
         .degree { font-size: 0.7rem; color: var(--sub-text); margin-bottom: 2px; }
-        .chord-name { font-size: 1rem; font-weight: bold; color: #fff; }
+        .chord-name { font-size: 0.95rem; font-weight: bold; color: #fff; word-break: break-all; }
         .desc { font-size: 0.65rem; color: var(--accent-color); margin-top: 2px; }
     </style>
 </head>
@@ -215,7 +213,6 @@
         <select id="scaleSelect" onchange="updateAll()"></select>
     </div>
 
-    <!-- 1. 음이름 지판 -->
     <div class="section-title">
         <span>1. Note Names Fretboard (음이름)</span>
         <span id="scaleFormula" class="scale-info"></span>
@@ -225,7 +222,6 @@
         <div id="fretNumbersNotes" class="fret-numbers"></div>
     </div>
 
-    <!-- 2. 음정/도수 지판 -->
     <div class="section-title">
         <span>2. Intervals / Scale Degrees Fretboard (도수)</span>
     </div>
@@ -234,7 +230,6 @@
         <div id="fretNumbersDegrees" class="fret-numbers"></div>
     </div>
 
-    <!-- 코드 분석 -->
     <div class="section-title">Diatonic & Target Chords</div>
     <div id="diatonicGrid" class="chord-grid"></div>
 
@@ -293,16 +288,16 @@
             },
             harmonic_minor: {
                 diatonic: [
-                    { deg: "i m(maj7)", offset: 0, type: "mM7" },
-                    { deg: "ii m7(b5)", offset: 2, type: "m7b5" },
-                    { deg: "bIII maj7(#5)", offset: 3, type: "maj7#5" },
-                    { deg: "iv m7", offset: 5, type: "m7" },
-                    { deg: "V 7", offset: 7, type: "7" },
-                    { deg: "bVI maj7", offset: 8, type: "maj7" },
-                    { deg: "vii dim7", offset: 11, type: "dim7" }
+                    { deg: "im(maj7)", offset: 0, type: "mM7" },
+                    { deg: "iim7b5", offset: 2, type: "m7b5" },
+                    { deg: "bIIImaj7#5", offset: 3, type: "maj7#5" },
+                    { deg: "ivm7", offset: 5, type: "m7" },
+                    { deg: "V7", offset: 7, type: "7" },
+                    { deg: "bVImaj7", offset: 8, type: "maj7" },
+                    { deg: "viidim7", offset: 11, type: "dim7" }
                 ],
                 modal: [
-                    { deg: "V7(b9)", offset: 7, type: "7b9", desc: "Phrygian Dom" },
+                    { deg: "V7(b9,b13)", offset: 7, type: "7(b9,b13)", desc: "Dominant Tone" },
                     { deg: "ivm6", offset: 5, type: "m6", desc: "Subdom Minor" }
                 ],
                 subs: [
@@ -311,60 +306,217 @@
             },
             melodic_minor: {
                 diatonic: [
-                    { deg: "i m(maj7)", offset: 0, type: "mM7" },
-                    { deg: "ii m7", offset: 2, type: "m7" },
-                    { deg: "bIII maj7(#5)", offset: 3, type: "maj7#5" },
-                    { deg: "IV 7", offset: 5, type: "7" },
-                    { deg: "V 7", offset: 7, type: "7" },
-                    { deg: "vi m7(b5)", offset: 9, type: "m7b5" },
-                    { deg: "vii m7(b5)", offset: 11, type: "m7b5" }
+                    { deg: "im(maj7)", offset: 0, type: "mM7" },
+                    { deg: "iim7", offset: 2, type: "m7" },
+                    { deg: "bIIImaj7#5", offset: 3, type: "maj7#5" },
+                    { deg: "IV7", offset: 5, type: "7" },
+                    { deg: "V7", offset: 7, type: "7" },
+                    { deg: "vim7b5", offset: 9, type: "m7b5" },
+                    { deg: "viim7b5", offset: 11, type: "m7b5" }
                 ],
                 modal: [
-                    { deg: "IV7(#11)", offset: 5, type: "7#11", desc: "Lydian Dom" },
-                    { deg: "viialt", offset: 11, type: "alt", desc: "Altered Scale" }
+                    { deg: "IV7(#11)", offset: 5, type: "7(#11)", desc: "Lydian Dom" },
+                    { deg: "viialt", offset: 11, type: "7alt", desc: "Altered Scale" }
                 ],
                 subs: [
                     { deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }
                 ]
             },
             dorian: {
-                diatonic: [{ deg: "im7", offset: 0, type: "m7" }, { deg: "iim7", offset: 2, type: "m7" }, { deg: "bIIImaj7", offset: 3, type: "maj7" }, { deg: "IV7", offset: 5, type: "7" }, { deg: "vm7", offset: 7, type: "m7" }, { deg: "vim7b5", offset: 9, type: "m7b5" }, { deg: "bVIImaj7", offset: 10, type: "maj7" }],
-                modal: [{ deg: "IV7", offset: 5, type: "7", desc: "Char. Chord" }, { deg: "iim7", offset: 2, type: "m7", desc: "Char. Chord" }],
+                diatonic: [
+                    { deg: "im7", offset: 0, type: "m7" },
+                    { deg: "iim7", offset: 2, type: "m7" },
+                    { deg: "bIIImaj7", offset: 3, type: "maj7" },
+                    { deg: "IV7", offset: 5, type: "7" },
+                    { deg: "vm7", offset: 7, type: "m7" },
+                    { deg: "vim7b5", offset: 9, type: "m7b5" },
+                    { deg: "bVIImaj7", offset: 10, type: "maj7" }
+                ],
+                modal: [
+                    { deg: "IV7", offset: 5, type: "7", desc: "Char. Chord (Natural 6)" },
+                    { deg: "iim7", offset: 2, type: "m7", desc: "Char. Chord" }
+                ],
                 subs: [{ deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
             },
             phrygian: {
-                diatonic: [{ deg: "im7", offset: 0, type: "m7" }, { deg: "bIImaj7", offset: 1, type: "maj7" }, { deg: "bIII7", offset: 3, type: "7" }, { deg: "ivm7", offset: 5, type: "m7" }, { deg: "vm7b5", offset: 7, type: "m7b5" }, { deg: "bVImaj7", offset: 8, type: "maj7" }, { deg: "bviim7", offset: 10, type: "m7" }],
-                modal: [{ deg: "bIImaj7", offset: 1, type: "maj7", desc: "Char. Chord" }],
+                diatonic: [
+                    { deg: "im7", offset: 0, type: "m7" },
+                    { deg: "bIImaj7", offset: 1, type: "maj7" },
+                    { deg: "bIII7", offset: 3, type: "7" },
+                    { deg: "ivm7", offset: 5, type: "m7" },
+                    { deg: "vm7b5", offset: 7, type: "m7b5" },
+                    { deg: "bVImaj7", offset: 8, type: "maj7" },
+                    { deg: "bviim7", offset: 10, type: "m7" }
+                ],
+                modal: [{ deg: "bIImaj7", offset: 1, type: "maj7", desc: "Char. Chord (Flat 2)" }],
                 subs: [{ deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
             },
             lydian: {
-                diatonic: [{ deg: "Imaj7", offset: 0, type: "maj7" }, { deg: "II7", offset: 2, type: "7" }, { deg: "iiim7", offset: 4, type: "m7" }, { deg: "#ivm7b5", offset: 6, type: "m7b5" }, { deg: "Vmaj7", offset: 7, type: "maj7" }, { deg: "vim7", offset: 9, type: "m7" }, { deg: "viim7", offset: 11, type: "m7" }],
-                modal: [{ deg: "II7", offset: 2, type: "7", desc: "Char. Chord" }],
+                diatonic: [
+                    { deg: "Imaj7", offset: 0, type: "maj7" },
+                    { deg: "II7", offset: 2, type: "7" },
+                    { deg: "iiim7", offset: 4, type: "m7" },
+                    { deg: "#ivm7b5", offset: 6, type: "m7b5" },
+                    { deg: "Vmaj7", offset: 7, type: "maj7" },
+                    { deg: "vim7", offset: 9, type: "m7" },
+                    { deg: "viim7", offset: 11, type: "m7" }
+                ],
+                modal: [{ deg: "II7", offset: 2, type: "7", desc: "Char. Chord (Sharp 4)" }],
                 subs: [{ deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
             },
             mixolydian: {
-                diatonic: [{ deg: "I7", offset: 0, type: "7" }, { deg: "iim7", offset: 2, type: "m7" }, { deg: "iiim7b5", offset: 4, type: "m7b5" }, { deg: "IVmaj7", offset: 5, type: "maj7" }, { deg: "vm7", offset: 7, type: "m7" }, { deg: "vim7", offset: 9, type: "m7" }, { deg: "bVIImaj7", offset: 10, type: "maj7" }],
-                modal: [{ deg: "bVIImaj7", offset: 10, type: "maj7", desc: "Char. Chord" }, { deg: "vm7", offset: 7, type: "m7", desc: "Char. Chord" }],
+                diatonic: [
+                    { deg: "I7", offset: 0, type: "7" },
+                    { deg: "iim7", offset: 2, type: "m7" },
+                    { deg: "iiim7b5", offset: 4, type: "m7b5" },
+                    { deg: "IVmaj7", offset: 5, type: "maj7" },
+                    { deg: "vm7", offset: 7, type: "m7" },
+                    { deg: "vim7", offset: 9, type: "m7" },
+                    { deg: "bVIImaj7", offset: 10, type: "maj7" }
+                ],
+                modal: [
+                    { deg: "bVIImaj7", offset: 10, type: "maj7", desc: "Char. Chord (Flat 7)" },
+                    { deg: "vm7", offset: 7, type: "m7", desc: "Char. Chord" }
+                ],
                 subs: [{ deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
             },
             locrian: {
-                diatonic: [{ deg: "im7b5", offset: 0, type: "m7b5" }, { deg: "bIImaj7", offset: 1, type: "maj7" }, { deg: "biiim7", offset: 3, type: "m7" }, { deg: "ivm7", offset: 5, type: "m7" }, { deg: "bVmaj7", offset: 6, type: "maj7" }, { deg: "bVI7", offset: 8, type: "7" }, { deg: "bviim7", offset: 10, type: "m7" }],
-                modal: [{ deg: "im7b5", offset: 0, type: "m7b5", desc: "Char. Chord" }],
+                diatonic: [
+                    { deg: "im7b5", offset: 0, type: "m7b5" },
+                    { deg: "bIImaj7", offset: 1, type: "maj7" },
+                    { deg: "biiim7", offset: 3, type: "m7" },
+                    { deg: "ivm7", offset: 5, type: "m7" },
+                    { deg: "bVmaj7", offset: 6, type: "maj7" },
+                    { deg: "bVI7", offset: 8, type: "7" },
+                    { deg: "bviim7", offset: 10, type: "m7" }
+                ],
+                modal: [{ deg: "im7b5", offset: 0, type: "m7b5", desc: "Char. Chord (Flat 5)" }],
                 subs: [{ deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
             },
             phrygian_dominant: {
-                diatonic: [{ deg: "I7", offset: 0, type: "7" }, { deg: "bIImaj7", offset: 1, type: "maj7" }, { deg: "iim7b5", offset: 3, type: "m7b5" }, { deg: "ivm7", offset: 5, type: "m7" }, { deg: "vm7b5", offset: 6, type: "m7b5" }, { deg: "bVImaj7#5", offset: 8, type: "maj7#5" }, { deg: "bviim7", offset: 10, type: "m7" }],
-                modal: [{ deg: "I7(b9)", offset: 0, type: "7b9", desc: "Dominant Tone" }],
+                diatonic: [
+                    { deg: "I7(b9,b13)", offset: 0, type: "7(b9,b13)" },
+                    { deg: "bIImaj7", offset: 1, type: "maj7" },
+                    { deg: "iim7b5", offset: 3, type: "m7b5" },
+                    { deg: "ivm7", offset: 5, type: "m7" },
+                    { deg: "vm7b5", offset: 6, type: "m7b5" },
+                    { deg: "bVImaj7#5", offset: 8, type: "maj7#5" },
+                    { deg: "bviim7", offset: 10, type: "m7" }
+                ],
+                modal: [{ deg: "bIImaj7", offset: 1, type: "maj7", desc: "Char. Chord (Flat 2)" }],
                 subs: [{ deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
             },
             altered: {
-                diatonic: [{ deg: "I7alt", offset: 0, type: "7alt" }, { deg: "bIIm7", offset: 1, type: "m7" }, { deg: "bIII7", offset: 3, type: "7" }, { deg: "IVm(maj7)", offset: 4, type: "m(maj7)" }, { deg: "bVm7b5", offset: 6, type: "m7b5" }, { deg: "bVImaj7#5", offset: 8, type: "maj7#5" }, { deg: "bVII7", offset: 10, type: "7" }],
+                diatonic: [
+                    { deg: "I7alt", offset: 0, type: "7(b9,#9,#11,b13)" },
+                    { deg: "bIIm7", offset: 1, type: "m7" },
+                    { deg: "bIII7", offset: 3, type: "7" },
+                    { deg: "bIVm(maj7)", offset: 4, type: "m(maj7)" },
+                    { deg: "bVm7b5", offset: 6, type: "m7b5" },
+                    { deg: "bVImaj7#5", offset: 8, type: "maj7#5" },
+                    { deg: "bVII7", offset: 10, type: "7" }
+                ],
+                modal: [{ deg: "I7alt", offset: 0, type: "7alt", desc: "Altered Dominant Tone" }],
+                subs: [{ deg: "V7", offset: 7, type: "7", desc: "Original Target" }]
+            },
+            lydian_dominant: {
+                diatonic: [
+                    { deg: "I7(#11)", offset: 0, type: "7(#11)" },
+                    { deg: "IIm7", offset: 2, type: "m7" },
+                    { deg: "IIIm7b5", offset: 4, type: "m7b5" },
+                    { deg: "#IVm7b5", offset: 6, type: "m7b5" },
+                    { deg: "Vmaj7#5", offset: 7, type: "maj7#5" },
+                    { deg: "VIm7", offset: 9, type: "m7" },
+                    { deg: "bVIImaj7", offset: 10, type: "maj7" }
+                ],
+                modal: [{ deg: "I7(#11)", offset: 0, type: "7(#11)", desc: "Char. Chord (#11)" }],
+                subs: [{ deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
+            },
+            mixolydian_b6: {
+                diatonic: [
+                    { deg: "I7(b13)", offset: 0, type: "7(b13)" },
+                    { deg: "IIm7b5", offset: 2, type: "m7b5" },
+                    { deg: "IIImaj7#5", offset: 4, type: "maj7#5" },
+                    { deg: "IVm7", offset: 5, type: "m7" },
+                    { deg: "Vm7", offset: 7, type: "m7" },
+                    { deg: "bVImaj7", offset: 8, type: "maj7" },
+                    { deg: "bVII7", offset: 10, type: "7" }
+                ],
+                modal: [{ deg: "IVm7", offset: 5, type: "m7", desc: "Subdominant Minor Tone" }],
+                subs: [{ deg: "bII7", offset: 1, type: "7", desc: "Tritone Sub" }]
+            },
+            whole_tone: {
+                diatonic: [
+                    { deg: "I7(#5)", offset: 0, type: "7(#5)" },
+                    { deg: "II7(#5)", offset: 2, type: "7(#5)" },
+                    { deg: "III7(#5)", offset: 4, type: "7(#5)" },
+                    { deg: "#IV7(#5)", offset: 6, type: "7(#5)" },
+                    { deg: "#V7(#5)", offset: 8, type: "7(#5)" },
+                    { deg: "bVII7(#5)", offset: 10, type: "7(#5)" }
+                ],
+                modal: [], subs: []
+            },
+            diminished_hw: {
+                diatonic: [
+                    { deg: "I7", offset: 0, type: "7" },
+                    { deg: "bII7", offset: 1, type: "7" },
+                    { deg: "bIII7", offset: 3, type: "7" },
+                    { deg: "III7", offset: 4, type: "7" },
+                    { deg: "#IV7", offset: 6, type: "7" },
+                    { deg: "V7", offset: 7, type: "7" },
+                    { deg: "VI7", offset: 9, type: "7" },
+                    { deg: "bVII7", offset: 10, type: "7" }
+                ],
+                modal: [{ deg: "Idim7", offset: 0, type: "dim7", desc: "Symmetrical Diminished" }],
+                subs: []
+            },
+            diminished_wh: {
+                diatonic: [
+                    { deg: "Idim7", offset: 0, type: "dim7" },
+                    { deg: "IIdim7", offset: 2, type: "dim7" },
+                    { deg: "bIIIdim7", offset: 3, type: "dim7" },
+                    { deg: "IVdim7", offset: 5, type: "dim7" },
+                    { deg: "bVdim7", offset: 6, type: "dim7" },
+                    { deg: "bVIdim7", offset: 8, type: "dim7" },
+                    { deg: "VIdim7", offset: 9, type: "dim7" },
+                    { deg: "VIIdim7", offset: 11, type: "dim7" }
+                ],
+                modal: [], subs: []
+            },
+            major_pentatonic: {
+                diatonic: [
+                    { deg: "I", offset: 0, type: "" },
+                    { deg: "ii", offset: 2, type: "m" },
+                    { deg: "iii", offset: 4, type: "m" },
+                    { deg: "V", offset: 7, type: "" },
+                    { deg: "vi", offset: 9, type: "m" }
+                ],
+                modal: [], subs: []
+            },
+            minor_pentatonic: {
+                diatonic: [
+                    { deg: "im", offset: 0, type: "m" },
+                    { deg: "bIII", offset: 3, type: "" },
+                    { deg: "iv", offset: 5, type: "m" },
+                    { deg: "v", offset: 7, type: "m" },
+                    { deg: "bVII", offset: 10, type: "" }
+                ],
+                modal: [], subs: []
+            },
+            minor_blues: {
+                diatonic: [
+                    { deg: "im7", offset: 0, type: "m7" },
+                    { deg: "bIII", offset: 3, type: "" },
+                    { deg: "ivm7", offset: 5, type: "m7" },
+                    { deg: "bV", offset: 6, type: "(b5)" },
+                    { deg: "vm7", offset: 7, type: "m7" },
+                    { deg: "bVII7", offset: 10, type: "7" }
+                ],
                 modal: [], subs: []
             },
             generic: {
-                diatonic: [{ deg: "Root", offset: 0, type: "7" }, { deg: "3rd", offset: 4, type: "m7b5" }, { deg: "5th", offset: 7, type: "7" }],
-                modal: [{ deg: "SubV", offset: 1, type: "7", desc: "Tritone" }],
-                subs: [{ deg: "Sec Dom", offset: 7, type: "7" }]
+                diatonic: [{ deg: "Root", offset: 0, type: "7" }],
+                modal: [], subs: []
             }
         };
 
